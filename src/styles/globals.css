@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #0A0A0A;
+  overflow: hidden;
+}
+
+/* A subtle “graphic realism” background: grid + vignette + faint chroma */
+.b0-bg {
+  position: relative;
+  background:
+    radial-gradient(1200px 700px at 50% 55%, rgba(45,255,122,0.06), transparent 55%),
+    radial-gradient(1100px 650px at 55% 48%, rgba(214,255,0,0.03), transparent 60%),
+    radial-gradient(900px 600px at 40% 45%, rgba(255,46,46,0.02), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.02), transparent 25%, rgba(0,0,0,0.65) 100%),
+    #0A0A0A;
+}
+
+/* Grid overlay */
+.b0-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(rgba(234,234,234,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234,234,234,0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(closest-side at 50% 45%, black 55%, transparent 100%);
+}
+
+/* Scanlines */
+.b0-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.05),
+      rgba(255,255,255,0.05) 1px,
+      rgba(0,0,0,0) 3px,
+      rgba(0,0,0,0) 6px
+    );
+}
+
+/* Animated noise layer (no external assets) */
+.b0-noise {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  opacity: 0.10;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.10) 0.6px, transparent 1.2px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.08) 0.6px, transparent 1.2px),
+    radial-gradient(circle at 45% 75%, rgba(255,255,255,0.06) 0.6px, transparent 1.2px);
+  background-size: 60px 60px, 90px 90px, 120px 120px;
+  mix-blend-mode: overlay;
+}
+
+/* A subtle vignette */
+.b0-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side at 50% 45%, transparent 55%, rgba(0,0,0,0.85) 100%);
+}
