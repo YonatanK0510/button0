@@ -1,96 +1,92 @@
-import { useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ButtonCore } from "./components/ButtonCore";
-import { Overlay } from "./components/Overlay";
+import { useSound } from "./hooks/useSounds";
 import { StatusBar } from "./components/StatusBar";
 import { usePressEngine } from "./hooks/usePressEngine";
-import { useSound } from "./hooks/useSounds";
+import type { Button0Event } from "./hooks/usePressEngine";
 
 export default function App() {
-  const { globalCount, unlocked, active, press, setCosmetic } = usePressEngine();
-  const { muted, toggleMuted, click, rare } = useSound();
+  const {
+    deviceId,
+    myClicks,
+    unlocked,
+    selected,
+    allCosmetics,
+    press,
+    selectCosmetic,
+    lastEvent,
+    clearEvent,
+    devSimulateGlitch,
+    devSimulateUnlockUltra,
+  } = usePressEngine();
+  const sound = useSound();
 
-  // Overlay state
-  const [overlayOpen, setOverlayOpen] = useState(false);
-  const [overlayTitle, setOverlayTitle] = useState("SIGNAL");
-  const [overlayBody, setOverlayBody] = useState("");
-  const [overlayAccent, setOverlayAccent] = useState<"g" | "y" | "r">("g");
+  const [toast, setToast] = useState<Button0Event | null>(null);
+  const hideRef = useRef<number | null>(null);
 
-  // For glitch flashes (incrementing key triggers an animation)
-  const [glitchPulse, setGlitchPulse] = useState(0);
+  useEffect(() => {
+    // Ensure only one toast at a time; clear previous timeout before scheduling a new one.
+    if (lastEvent.kind !== "none") {
+      if (hideRef.current) {
+        window.clearTimeout(hideRef.current);
+        hideRef.current = null;
+      }
 
-  // Subtle system status microtext
-  const statusBase = useMemo(
-    () => ["SYS: IDLE", "SYS: LISTENING", "SYS: STABLE", "SYS: READY", "SYS: NOMINAL"],
-    []
-  );
-  const [statusText, setStatusText] = useState(statusBase[0]);
+      // show current event as the single toast
+      setToast(lastEvent);
 
-  // Rapid press handling:
-  // - Don’t block clicks with overlay.
-  // - Keep press feedback immediate.
-  // - Use a small “cooldown” only for overlay spam.
-  const lastOverlayAt = useRef<number>(0);
+      // play appropriate sound
+      if (lastEvent.kind === "glitch") sound.glitch();
+      else if (lastEvent.kind === "unlock") sound.unlock();
 
-  const openOverlay = (title: string, body: string, accent: "g" | "y" | "r") => {
-    const now = Date.now();
-    // prevent overlay spam if user is machine-gunning clicks
-    if (now - lastOverlayAt.current < 900) return;
-    lastOverlayAt.current = now;
+      hideRef.current = window.setTimeout(() => {
+        setToast(null);
+        clearEvent();
+        hideRef.current = null;
+      }, 1500);
 
-    setOverlayTitle(title);
-    setOverlayBody(body);
-    setOverlayAccent(accent);
-    setOverlayOpen(true);
-  };
+      return () => {
+        if (hideRef.current) {
+          window.clearTimeout(hideRef.current);
+          hideRef.current = null;
+        }
+      };
+    }
+    // if no event, ensure toast cleared
+    setToast(null);
+    return undefined;
+  }, [lastEvent, clearEvent]);
 
   const onPress = () => {
-    // Immediate satisfying click feedback
-    click();
-
-    // Glitch pulse every press (subtle) — this is what makes spam-clicking feel good
-    setGlitchPulse((p) => p + 1);
-
-    const res = press();
-
-    // Update micro status occasionally for flavor
-    if (res.event.type !== "none") {
-      setStatusText("SYS: SIGNAL DETECTED");
-      window.setTimeout(() => setStatusText(statusBase[Math.floor(Math.random() * statusBase.length)]), 1000);
-    } else if (Math.random() < 0.06) {
-      setStatusText(statusBase[Math.floor(Math.random() * statusBase.length)]);
-    }
-
-    if (res.event.type === "message") {
-      if (res.event.rarity === "rare") {
-        rare();
-        openOverlay("RARE SIGNAL", res.event.message, "g");
-      } else {
-        openOverlay("SIGNAL", res.event.message, "g");
-      }
-    }
-
-    if (res.event.type === "cosmetic") {
-      // stronger sound + overlay
-      rare();
-      const accent = res.event.cosmetic === "hazard" ? "y" : "g";
-      openOverlay("UNLOCK", res.event.message, accent);
-    }
+    // user interaction: ensure sound resumes/starts and play click
+    sound.click();
+    press();
   };
+
+  const DEV_CHEATS = false; // Set to false to disable dev keybinds
+  // Attach dev key bindings only when DEV_CHEATS is true
+  useEffect(() => {
+    if (!DEV_CHEATS) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "g" || e.key === "G") {
+        console.log("DEV: simulate GLITCH");
+        devSimulateGlitch();
+      } else if (e.key === "u" || e.key === "U") {
+        console.log("DEV: simulate UNLOCK ULTRA");
+        devSimulateUnlockUltra();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [devSimulateGlitch, devSimulateUnlockUltra]);
 
   return (
     <div className="b0-bg relative h-full w-full text-b0-fg">
-      {/* overlays */}
       <div className="b0-scanlines animate-flicker" />
       <div className="b0-noise animate-noiseShift" />
       <div className="b0-vignette" />
 
-      {/* moving scan bar (very subtle) */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-screen">
-        <div className="absolute left-0 right-0 top-0 h-[22%] bg-gradient-to-b from-white/30 to-transparent blur-2xl animate-scan" />
-      </div>
-
-      {/* Title / top micro UI */}
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-center pt-8">
         <div className="flex items-baseline gap-3">
           <div className="font-mono text-xs tracking-[0.52em] text-white/55">BUTTON0</div>
@@ -98,56 +94,46 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main center */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6">
-        <ButtonCore cosmetic={active} onPress={onPress} glitchPulse={glitchPulse} />
+        <ButtonCore cosmetic={selected} onPress={onPress} glitchPulse={lastEvent.kind !== "none" ? lastEvent.at : 0} />
 
-        <motion.div
-          className="mt-6 flex flex-col items-center gap-2"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="font-mono text-[11px] tracking-[0.34em] text-white/45">
-            GLOBAL PRESSES:{" "}
-            <span className={active === "hazard" ? "text-b0-y" : "text-b0-g"}>{globalCount.toLocaleString()}</span>
-          </div>
-
-          {/* Cosmetic row (only shows what’s unlocked; very subtle, not “menu-y”) */}
-          <div className="flex items-center gap-2">
-            {unlocked.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCosmetic(c)}
-                className={[
-                  "rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.24em] transition",
-                  "bg-black/35 backdrop-blur",
-                  c === active ? "border-white/20 text-white/75" : "border-white/10 text-white/45 hover:text-white/65",
-                  c === "neon" && c === active ? "shadow-neonG" : "",
-                  c === "hazard" && c === active ? "shadow-neonY" : "",
-                ].join(" ")}
-                title="Cosmetic"
-              >
-                {c.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-2 font-mono text-[10px] tracking-[0.28em] text-white/25">
-            MOST OF THE TIME, NOTHING HAPPENS.
-          </div>
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }} className="mt-6 flex flex-col items-center gap-2">
+          <div className="font-mono text-[11px] tracking-[0.34em] text-white/45">MOST OF THE TIME, NOTHING HAPPENS.</div>
         </motion.div>
       </div>
 
-      <StatusBar text={statusText} muted={muted} onToggleMute={toggleMuted} />
-
-      <Overlay
-        open={overlayOpen}
-        title={overlayTitle}
-        body={overlayBody}
-        accent={overlayAccent}
-        onClose={() => setOverlayOpen(false)}
+      <StatusBar
+        myClicks={myClicks}
+        deviceId={deviceId}
+        selected={selected}
+        unlocked={unlocked}
+        cosmetics={allCosmetics}
+        onSelect={(id) => selectCosmetic(id)}
       />
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+            key={String((toast as any)?.at ?? Date.now())}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+          >
+            <div className="rounded-lg border border-white/10 bg-black/75 px-4 py-2 font-mono text-sm text-white/90 backdrop-blur pointer-events-none">
+              <div className="font-semibold">
+                {toast.kind === "glitch" ? "GLITCH DETECTED" : toast.kind === "unlock" ? "COSMETIC UNLOCKED" : ""}
+              </div>
+              {toast.kind !== "none" && (toast as any).flavor && (
+                <div className="text-[10px] tracking-[0.22em] text-white/60">
+                  {(toast as any).flavor}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

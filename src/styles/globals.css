@@ -79,3 +79,28 @@ body {
   pointer-events: none;
   background: radial-gradient(closest-side at 50% 45%, transparent 55%, rgba(0,0,0,0.85) 100%);
 }
+
+/* Ultra cosmetics animations (minimal & lightweight) */
+@keyframes prism-sweep {
+  0% { background-position: -40% 50%; }
+  100% { background-position: 140% 50%; }
+}
+.animate-prism-sweep {
+  background-size: 300% 100%;
+  animation: prism-sweep 3.4s linear infinite;
+}
+
+@keyframes hazard-stripes {
+  0% { background-position: 0 0; opacity: 0.9; }
+  50% { background-position: 40px 0; opacity: 0.95; }
+  100% { background-position: 0 0; opacity: 0.9; }
+}
+.animate-hazard-stripes {
+  animation: hazard-stripes 2.2s linear infinite;
+}
+
+@keyframes specter-flicker {
+  0% { opacity: 0.45; filter: blur(6px) saturate(1.05); transform: translateY(0); }
+  50% { opacity: 0.16; filter: blur(8px) saturate(0.9); transform: translateY(-1px); }
+  100% { opacity: 0.45; filter: blur(6px) saturate(1.05); transform: translateY(0); }
+}

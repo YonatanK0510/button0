@@ -1,27 +1,9 @@
 import { motion } from "framer-motion";
-import type { Cosmetic } from "../hooks/usePressEngine";
+import { COSMETICS } from "../data/cosmetics";
+import type { CosmeticMeta } from "../data/cosmetics";
 
-function cosmeticClasses(c: Cosmetic) {
-  switch (c) {
-    case "neon":
-      return {
-        ring: "shadow-neonG",
-        accent: "text-b0-g",
-        sub: "border-b0-g/35",
-      };
-    case "hazard":
-      return {
-        ring: "shadow-neonY",
-        accent: "text-b0-y",
-        sub: "border-b0-y/35",
-      };
-    default:
-      return {
-        ring: "",
-        accent: "text-white/85",
-        sub: "border-white/12",
-      };
-  }
+function getMeta(id: string): CosmeticMeta {
+  return COSMETICS.find((c) => c.id === id) ?? COSMETICS[0];
 }
 
 export function ButtonCore({
@@ -29,26 +11,49 @@ export function ButtonCore({
   onPress,
   glitchPulse,
 }: {
-  cosmetic: Cosmetic;
+  cosmetic: string;
   onPress: () => void;
   glitchPulse: number;
 }) {
-  const theme = cosmeticClasses(cosmetic);
+  const meta = getMeta(cosmetic);
+  const theme = {
+    ring: meta.tokens.ringClass ?? "",
+    accent: meta.tokens.accentClass ?? "text-white/85",
+    sub: meta.tokens.ringClass ? `${meta.tokens.ringClass}/20` : "border-white/12",
+  };
 
   return (
     <div className="relative">
+      {/* Ultra-specific decorative layers */}
+      {meta.id === "prism" && (
+        <div className="pointer-events-none absolute inset-0 -z-6 overflow-hidden rounded-[36px]">
+          <div className="absolute inset-0 opacity-70 blur-[8px] animate-prism-sweep" style={{ background: meta.tokens.auraStyle, mixBlendMode: "screen" }} />
+          <div className="absolute inset-0 -z-2" style={{ backdropFilter: "hue-rotate(8deg)" }} />
+        </div>
+      )}
+
+      {meta.id === "specter" && (
+        <div className="pointer-events-none absolute inset-0 -z-6">
+          <div className="absolute inset-0 -translate-x-2 opacity-50" style={{ background: meta.tokens.auraStyle, mixBlendMode: "screen", filter: "blur(6px)", animation: "specter-flicker 2.6s infinite" }} />
+          <div className="absolute inset-0 translate-x-2 opacity-40" style={{ background: meta.tokens.auraStyle, mixBlendMode: "screen", filter: "blur(6px) contrast(0.9)", animation: "specter-flicker 2.1s infinite" }} />
+        </div>
+      )}
+
+      {meta.id === "hazard" && (
+        <div className="pointer-events-none absolute inset-0 -z-6 rounded-[36px] overflow-hidden">
+          <div className="absolute inset-0 opacity-70 animate-hazard-stripes" style={{ background: "repeating-linear-gradient(90deg, rgba(214,255,0,0.14) 0 8px, transparent 8px 16px)" }} />
+        </div>
+      )}
+
       {/* Glitch flash layer (keyed by glitchPulse) */}
       <motion.div
-        key={glitchPulse}
+        key={String(glitchPulse)}
         className="pointer-events-none absolute inset-[-40px] -z-10 rounded-[44px] opacity-0"
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: [0, 0.35, 0], scale: [0.98, 1.02, 1.0] }}
         transition={{ duration: 0.28 }}
         style={{
-          background:
-            cosmetic === "hazard"
-              ? "radial-gradient(closest-side, rgba(214,255,0,0.25), transparent 70%)"
-              : "radial-gradient(closest-side, rgba(45,255,122,0.22), transparent 70%)",
+          background: meta.tokens.auraStyle || (meta.tier === "ultra" ? "radial-gradient(closest-side, rgba(214,255,0,0.18), transparent 70%)" : "radial-gradient(closest-side, rgba(45,255,122,0.12), transparent 70%)"),
           filter: "contrast(1.2) saturate(1.2)",
           mixBlendMode: "screen",
         }}
@@ -84,10 +89,15 @@ export function ButtonCore({
           ].join(" ")}
         />
 
-        {/* Hazard stripe detail */}
-        {cosmetic === "hazard" && (
-          <div className="pointer-events-none absolute left-4 top-4 h-10 w-24 rotate-[-12deg] rounded-xl border border-b0-y/30 bg-b0-y/10">
-            <div className="h-full w-full rounded-xl bg-[repeating-linear-gradient(90deg,rgba(214,255,0,0.35)_0px,rgba(214,255,0,0.35)_8px,transparent_8px,transparent_16px)] opacity-70" />
+        {/* Ultra cosmetic extra detail */}
+        {meta.tier === "ultra" && (
+          <div className="pointer-events-none absolute inset-0 -z-5 rounded-[40px] opacity-60">
+            <motion.div
+              animate={{ rotate: [0, 2, -1, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 rounded-[40px]"
+              style={{ background: meta.tokens.auraStyle, mixBlendMode: "screen", filter: "blur(10px)" }}
+            />
           </div>
         )}
 
@@ -117,10 +127,7 @@ export function ButtonCore({
         animate={{ opacity: [0.16, 0.28, 0.16], scale: [0.995, 1.01, 0.995] }}
         transition={{ duration: 4.0, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          background:
-            cosmetic === "hazard"
-              ? "radial-gradient(closest-side, rgba(214,255,0,0.10), transparent 70%)"
-              : "radial-gradient(closest-side, rgba(45,255,122,0.09), transparent 70%)",
+          background: meta.tokens.auraStyle || (meta.tier === "ultra" ? "radial-gradient(closest-side, rgba(214,255,0,0.10), transparent 70%)" : "radial-gradient(closest-side, rgba(45,255,122,0.09), transparent 70%)"),
           filter: "blur(10px)",
         }}
       />
