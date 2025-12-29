@@ -67,7 +67,7 @@ export default function App() {
     press();
   };
 
-  const DEV_CHEATS = true; // Set to false to disable dev keybinds
+  const DEV_CHEATS = false; // Set to false to disable dev keybinds
   // Attach dev key bindings only when DEV_CHEATS is true
   useEffect(() => {
     if (!DEV_CHEATS) return;
