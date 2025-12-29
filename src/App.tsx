@@ -23,40 +23,43 @@ export default function App() {
   const sound = useSound();
 
   const [toast, setToast] = useState<Button0Event | null>(null);
-  const hideRef = useRef<number | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
 
+  // Show toasts only for rare events. Ignore normal clicks (which set lastEvent.kind === "none")
+  // so spamming doesn't clear the visible toast early. Store timer id in a ref and only
+  // clear/restart it when a new rare event arrives. We clear the ref on unmount.
   useEffect(() => {
-    // Ensure only one toast at a time; clear previous timeout before scheduling a new one.
-    if (lastEvent.kind !== "none") {
-      if (hideRef.current) {
-        window.clearTimeout(hideRef.current);
-        hideRef.current = null;
-      }
+    if (lastEvent.kind === "none") return;
 
-      // show current event as the single toast
-      setToast(lastEvent);
-
-      // play appropriate sound
-      if (lastEvent.kind === "glitch") sound.glitch();
-      else if (lastEvent.kind === "unlock") sound.unlock();
-
-      hideRef.current = window.setTimeout(() => {
-        setToast(null);
-        clearEvent();
-        hideRef.current = null;
-      }, 1500);
-
-      return () => {
-        if (hideRef.current) {
-          window.clearTimeout(hideRef.current);
-          hideRef.current = null;
-        }
-      };
+    // New rare event: cancel any existing toast timer and show the incoming toast.
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
     }
-    // if no event, ensure toast cleared
-    setToast(null);
-    return undefined;
-  }, [lastEvent, clearEvent]);
+
+    setToast(lastEvent);
+    if (lastEvent.kind === "glitch") sound.glitch();
+    else if (lastEvent.kind === "unlock") sound.unlock();
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      clearEvent();
+      toastTimerRef.current = null;
+    }, 1600);
+    // Intentionally depend only on lastEvent so normal clicks (which set lastEvent = none)
+    // won't trigger the cleanup that would cancel the timer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastEvent]);
+
+  // Clear any pending toast timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const onPress = () => {
     // user interaction: ensure sound resumes/starts and play click
@@ -64,7 +67,7 @@ export default function App() {
     press();
   };
 
-  const DEV_CHEATS = false; // Set to false to disable dev keybinds
+  const DEV_CHEATS = true; // Set to false to disable dev keybinds
   // Attach dev key bindings only when DEV_CHEATS is true
   useEffect(() => {
     if (!DEV_CHEATS) return;
