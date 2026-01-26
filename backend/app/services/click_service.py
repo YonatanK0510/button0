@@ -31,10 +31,13 @@ class ClickService:
             )
             profile = self.profile_repo.create(profile)
         
-        # Increment user clicks
-        profile.my_clicks += delta
-        profile.updated_at = utc_now()
-        profile = self.profile_repo.update(profile)
+        # Increment user clicks (prefer atomic repo method if available)
+        if hasattr(self.profile_repo, "increment_clicks"):
+            profile = self.profile_repo.increment_clicks(device_id, delta)
+        else:
+            profile.my_clicks += delta
+            profile.updated_at = utc_now()
+            profile = self.profile_repo.update(profile)
         
         # Increment global clicks
         global_state = self.global_repo.increment_clicks(delta)

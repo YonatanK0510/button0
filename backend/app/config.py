@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     host: str = "0.0.0.0"
     port: int = 8000
+    database_url: str = "sqlite:///./button0.db"  # Default to SQLite for dev
+    repository_mode: str = "inmemory"  # "inmemory" or "postgres"
     
     class Config:
         env_file = ".env"
