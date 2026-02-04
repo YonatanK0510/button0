@@ -5,8 +5,8 @@ namespace: button0
 
 # Image configuration
 image:
-  repository: button0-frontend
-  tag: latest
+  repository: 186582695522.dkr.ecr.eu-central-1.amazonaws.com/button0-frontend
+  tag: a713142
   pullPolicy: IfNotPresent
 
 # Replica count
