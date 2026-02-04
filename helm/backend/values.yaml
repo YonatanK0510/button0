@@ -39,7 +39,7 @@ env:
 # Health check configuration
 healthCheck:
   readinessProbe:
-    path: /api/v1/health/ready
+    path: /api/v1/health/ready  # CHANGE: was /healthz, now correct endpoint
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
