@@ -1,0 +1,6 @@
+apiVersion: v2
+name: button0-frontend
+description: A Helm chart for Button0 React frontend
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

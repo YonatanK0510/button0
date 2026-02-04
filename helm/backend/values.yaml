@@ -1,0 +1,67 @@
+# values.yaml
+# Default values for button0-backend
+
+# Namespace to deploy to
+namespace: button0
+
+# Image configuration
+image:
+  repository: button0-backend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Replica count
+replicaCount: 1
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Environment variables
+env:
+  DATABASE_URL: "postgresql://button0:button0@button0-db:5432/button0"
+  CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173"
+  REPOSITORY_MODE: "postgres"
+  HOST: "0.0.0.0"
+  PORT: "8000"
+
+# Health check configuration
+healthCheck:
+  readinessProbe:
+    path: /api/v1/health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  livenessProbe:
+    path: /api/v1/health/live
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

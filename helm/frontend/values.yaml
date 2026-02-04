@@ -1,0 +1,71 @@
+# Default values for button0-frontend
+
+# Namespace to deploy to
+namespace: button0
+
+# Image configuration
+image:
+  repository: button0-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Replica count
+replicaCount: 2
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+  hosts:
+    - host: ""  # Set to your domain or leave empty for ALB DNS
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: button0-backend
+              port: 8000
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: button0-frontend
+              port: 80
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Environment variables (if needed)
+env: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
