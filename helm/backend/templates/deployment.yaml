@@ -46,8 +46,8 @@ spec:
           value: {{ .Values.env.PORT | quote }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.healthCheck.readinessProbe.path }}
-            port: http
+            path: /healthz
+            port: 8000
           initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds }}
