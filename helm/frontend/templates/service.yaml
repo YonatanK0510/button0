@@ -10,8 +10,8 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  - port: {{ .Values.service.port }}
-    targetPort: {{ .Values.service.targetPort }}
+  - port: {{ .Values.service.port }}        # 80 (external)
+    targetPort: {{ .Values.service.targetPort }}  # 5173 (pod)
     protocol: TCP
     name: http
   selector:
