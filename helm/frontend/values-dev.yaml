@@ -30,3 +30,8 @@ backend:
   service:
     name: button0-backend
     port: 8000
+
+image:
+  repository: 186582695522.dkr.ecr.eu-central-1.amazonaws.com/button0-frontend
+  tag: 8a221da-nginx
+  pullPolicy: IfNotPresent
