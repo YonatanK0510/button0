@@ -3,9 +3,18 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  plugins: [react()],
   server: {
+    host: true,
     allowedHosts: [
-      "k8s-button0-button0f-e1297085bf-1621650183.eu-central-1.elb.amazonaws.com",
+      "dev.yk-loh7.online",
+      ".elb.amazonaws.com",
+    ],
+  },
+  preview: {
+    allowedHosts: [
+      "dev.yk-loh7.online",
+      ".elb.amazonaws.com",
     ],
   },
 });
