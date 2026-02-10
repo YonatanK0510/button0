@@ -30,9 +30,9 @@ spec:
         pathType: {{ .pathType }}
         backend:
           service:
-            name: {{ .backend.service.name }}
+            name: {{ default $.Values.backend.service.name .backend.service.name }}
             port:
-              number: {{ .backend.service.port }}
+              number: {{ default $.Values.backend.service.port .backend.service.port }}
       {{- end }}
   {{- end }}
 {{- end }}
