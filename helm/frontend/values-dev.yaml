@@ -9,6 +9,7 @@ ingress:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-central-1:186582695522:certificate/2534f2ef-c25b-43b8-bb58-486d633f4551
     alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/load-balancer-name: button0-dev-alb
   hosts:
     - host: dev.yk-loh7.online
       paths:
