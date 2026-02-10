@@ -17,6 +17,7 @@ spec:
     metadata:
       annotations:
         {{- toYaml .Values.podAnnotations | nindent 8 }}
+        rolloutTimestamp: "{{ now | unixEpoch }}"
       labels:
         app: {{ .Chart.Name }}
         release: {{ .Release.Name }}
