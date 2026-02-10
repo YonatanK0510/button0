@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ButtonCore } from "./components/ButtonCore";
 import { useSound } from "./hooks/useSounds";

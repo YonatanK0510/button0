@@ -1,4 +1,3 @@
-import React from "react";
 import type { CosmeticMeta } from "../data/cosmetics";
 
 export function StatusBar({
