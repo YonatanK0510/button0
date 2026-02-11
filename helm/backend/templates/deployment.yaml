@@ -17,7 +17,10 @@ spec:
   template:
     metadata:
       annotations:
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        argocd.argoproj.io/sync-wave: "10"  # Ensure backend is deployed before frontend
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         app: {{ .Chart.Name }}
         release: {{ .Release.Name }}
@@ -34,8 +37,19 @@ spec:
           containerPort: {{ .Values.service.targetPort }}
           protocol: TCP
         env:
-        - name: DATABASE_URL
-          value: {{ .Values.env.DATABASE_URL | quote }}
+        - name: DB_HOST
+          value: {{ .Values.database.host | quote }}
+        - name: DB_PORT
+          value: {{ .Values.database.port | quote }}
+        - name: DB_NAME
+          value: {{ .Values.database.name | quote }}
+        - name: DB_USER
+          value: {{ .Values.database.user | quote }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secretName | quote }}
+              key: {{ .Values.database.passwordKey | quote }}
         - name: CORS_ALLOWED_ORIGINS
           value: {{ .Values.env.CORS_ALLOWED_ORIGINS | quote }}
         - name: REPOSITORY_MODE

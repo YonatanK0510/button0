@@ -30,11 +30,18 @@ resources:
 
 # Environment variables
 env:
-  DATABASE_URL: "postgresql://button0:button0@button0-db:5432/button0"
   CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173"
   REPOSITORY_MODE: "postgres"
   HOST: "0.0.0.0"
   PORT: "8000"
+
+database:
+  host: button0-postgresql
+  port: "5432"
+  name: button0
+  user: button0
+  secretName: button0-postgresql
+  passwordKey: password
 
 # Health check configuration
 healthCheck:
