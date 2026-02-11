@@ -64,3 +64,20 @@ class GlobalStateORM(Base):
     
     def __repr__(self):
         return f"<GlobalState global_clicks={self.global_clicks}>"
+
+
+class UserORM(Base):
+    __tablename__ = "users"
+
+    user_id = Column(String, primary_key=True, index=True)
+    total_clicks = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now)
+    last_seen = Column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+
+class GlobalCounterORM(Base):
+    __tablename__ = "global_counter"
+
+    # constant single row with id=1
+    id = Column(Integer, primary_key=True)
+    total_clicks = Column(Integer, nullable=False, default=0)

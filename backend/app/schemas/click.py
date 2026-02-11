@@ -1,12 +1,21 @@
 """Click-related schemas"""
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ClickIncrementRequest(BaseModel):
     """Request to increment clicks"""
-    device_id: str
+    user_id: str
+    device_id: str | None = None
     delta: int = Field(default=1, ge=1, le=10)
+
+    @model_validator(mode="before")
+    @classmethod
+    def map_device_id(cls, data: dict) -> dict:
+        """Back-compat: allow device_id to populate user_id."""
+        if isinstance(data, dict) and not data.get("user_id") and data.get("device_id"):
+            data["user_id"] = data["device_id"]
+        return data
     
     @field_validator("delta")
     @classmethod

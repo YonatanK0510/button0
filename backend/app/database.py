@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from app.config import settings
 
-# Create engine from environment variable
+# Create engine from environment variable or build from DB_* vars
 engine = create_engine(
-    settings.database_url,
+    settings.get_database_url(),
     echo=False,  # Set to True for SQL query logging in development
     pool_pre_ping=True,  # Verify connections before use
 )
