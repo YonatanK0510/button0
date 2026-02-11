@@ -30,6 +30,7 @@ backend/.venv
 
 # Environment variables
 .env
+.venv/
 
 # Local databases
 *.db
