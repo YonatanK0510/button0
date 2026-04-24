@@ -6,7 +6,7 @@ namespace: button0
 # Image configuration
 image:
   repository: 186582695522.dkr.ecr.eu-central-1.amazonaws.com/button0-frontend
-  tag: sha-98ace23
+  tag: sha-e9e5945
   pullPolicy: IfNotPresent
 
 # Replica count
