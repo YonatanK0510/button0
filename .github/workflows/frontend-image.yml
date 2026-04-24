@@ -1,0 +1,96 @@
+name: Frontend Image CI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "tsconfig*.json"
+      - "Dockerfile.frontend.prod"
+      - "helm/frontend/**"
+      - ".github/workflows/frontend-image.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency:
+  group: frontend-image-master
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: eu-central-1
+      AWS_ACCOUNT_ID: "186582695522"
+      ECR_REGISTRY: 186582695522.dkr.ecr.eu-central-1.amazonaws.com
+      IMAGE_NAME: button0-frontend
+      VALUES_FILES: helm/frontend/values.yaml,helm/frontend/values-dev.yaml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            -t "${ECR_REGISTRY}/${IMAGE_NAME}:sha-${{ steps.vars.outputs.short_sha }}" \
+            -f Dockerfile.frontend.prod \
+            .
+
+      - name: Push frontend image
+        run: |
+          docker push "${ECR_REGISTRY}/${IMAGE_NAME}:sha-${{ steps.vars.outputs.short_sha }}"
+
+      - name: Update frontend Helm image tag
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+
+          new_tag = "sha-${{ steps.vars.outputs.short_sha }}"
+          for raw_path in os.environ["VALUES_FILES"].split(","):
+              path = Path(raw_path)
+              text = path.read_text()
+              updated = re.sub(r'(?m)^(\s*tag:\s*).+$', r'\1' + new_tag, text, count=1)
+              if updated == text:
+                  raise SystemExit(f"No frontend image tag line was updated in {path}")
+              path.write_text(updated)
+          PY
+
+      - name: Commit and push tag update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add helm/frontend/values.yaml helm/frontend/values-dev.yaml
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(ci): update frontend image tag to sha-${{ steps.vars.outputs.short_sha }}"
+          git push origin HEAD:master
