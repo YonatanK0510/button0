@@ -93,4 +93,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore(ci): update frontend image tag to sha-${{ steps.vars.outputs.short_sha }}"
+          git pull --rebase origin master
           git push origin HEAD:master
