@@ -23,7 +23,29 @@ export default function App() {
   const sound = useSound();
 
   const [toast, setToast] = useState<Button0Event | null>(null);
+  const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking");
   const toastTimerRef = useRef<number | null>(null);
+
+  // Demo-safe connectivity check: UI remains fully local even if API is unavailable.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const checkBackend = async () => {
+      try {
+        const response = await fetch("/api/v1/health/ready", {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        setBackendStatus(response.ok ? "online" : "offline");
+      } catch {
+        setBackendStatus("offline");
+      }
+    };
+
+    checkBackend();
+    return () => controller.abort();
+  }, []);
 
   // Show toasts only for rare events. Ignore normal clicks (which set lastEvent.kind === "none")
   // so spamming doesn't clear the visible toast early. Store timer id in a ref and only
@@ -111,6 +133,7 @@ export default function App() {
         selected={selected}
         unlocked={unlocked}
         cosmetics={allCosmetics}
+        backendStatus={backendStatus}
         onSelect={(id) => selectCosmetic(id)}
       />
 

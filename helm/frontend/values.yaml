@@ -16,7 +16,7 @@ replicaCount: 2
 service:
   type: ClusterIP
   port: 80
-  targetPort: 5173
+  targetPort: 80
 
 # Ingress configuration
 ingress:

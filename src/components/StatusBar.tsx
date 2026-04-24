@@ -7,12 +7,14 @@ export function StatusBar({
   unlocked,
   onSelect,
   cosmetics,
+  backendStatus,
 }: {
   myClicks: number;
   deviceId: string;
   selected: string;
   unlocked: string[];
   cosmetics: CosmeticMeta[];
+  backendStatus?: "checking" | "online" | "offline";
   onSelect: (id: string) => void;
 }) {
   const shortId = deviceId.slice(0, 6);
@@ -35,6 +37,12 @@ export function StatusBar({
             {
               cosmetics.find((c) => c.id === selected)?.name ?? selected
             }
+          </span>
+        </div>
+        <div className="ml-3">
+          API:
+          <span className="ml-1 font-mono text-xs text-white/70">
+            {backendStatus ?? "checking"}
           </span>
         </div>
       </div>

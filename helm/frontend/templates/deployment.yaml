@@ -16,7 +16,6 @@ spec:
   template:
     metadata:
       annotations:
-        rolloutTimestamp: "{{ now | unixEpoch }}"
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
