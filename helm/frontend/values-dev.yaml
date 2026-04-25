@@ -33,5 +33,5 @@ backend:
 
 image:
   repository: 186582695522.dkr.ecr.eu-central-1.amazonaws.com/button0-frontend
-  tag: sha-e9e5945
+  tag: sha-c5950a6
   pullPolicy: IfNotPresent
