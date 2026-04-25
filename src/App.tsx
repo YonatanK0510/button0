@@ -5,6 +5,7 @@ import { useSound } from "./hooks/useSounds";
 import { StatusBar } from "./components/StatusBar";
 import { usePressEngine } from "./hooks/usePressEngine";
 import type { Button0Event } from "./hooks/usePressEngine";
+import { DemoDock, DemoWindows, type DemoPanelId } from "./components/DemoWindows";
 
 export default function App() {
   const {
@@ -24,6 +25,7 @@ export default function App() {
 
   const [toast, setToast] = useState<Button0Event | null>(null);
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking");
+  const [activePanel, setActivePanel] = useState<DemoPanelId | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
   // Demo-safe connectivity check: UI remains fully local even if API is unavailable.
@@ -106,6 +108,17 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [devSimulateGlitch, devSimulateUnlockUltra]);
 
+  useEffect(() => {
+    if (!activePanel) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActivePanel(null);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activePanel]);
+
   return (
     <div className="b0-bg relative h-full w-full text-b0-fg">
       <div className="b0-scanlines animate-flicker" />
@@ -135,6 +148,15 @@ export default function App() {
         cosmetics={allCosmetics}
         backendStatus={backendStatus}
         onSelect={(id) => selectCosmetic(id)}
+      />
+
+      <DemoDock activePanel={activePanel} onOpen={setActivePanel} />
+
+      <DemoWindows
+        activePanel={activePanel}
+        onClose={() => setActivePanel(null)}
+        myClicks={myClicks}
+        deviceId={deviceId}
       />
 
       <AnimatePresence>
